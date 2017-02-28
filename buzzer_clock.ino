@@ -1,3 +1,7 @@
+unsigned long seconds_into_day = 0;
+
+unsigned long current_second = 0;
+
 const char Q1[] PROGMEM = "! g#f#e<b.R8";
 const char Q2[] PROGMEM = "eg#f#<b.R8 ef#g#e.R8";
 const char Q3[] PROGMEM = "g#ef#<b.R8 <bf#g#e.R8 g#f#e<b.R8";
@@ -7,14 +11,22 @@ const char Q4[] PROGMEM = "eg#f#<b.R8 ef#g#e.R8 g#ef#<b.R8 <bf#g#e.R8";
 
 AStar32U4Buzzer buzzer;
 AStar32U4ButtonA buttonA;
+AStar32U4LCD lcd;
 
 void setup() {
   // put your setup code here, to run once:
-  delay(5000);
-  playAll();
+
+  lcd.clear();
 }
 
 void loop() {
+  if (millis() / 1000 != current_second) {
+    current_second = millis() / 1000;
+
+    lcd.clear();
+    lcd.print(current_second);
+  }
+  
   // put your main code here, to run repeatedly:
   if (buttonA.getSingleDebouncedRelease()) {
     playAll();
@@ -23,6 +35,7 @@ void loop() {
 
 
 void playAll() {
+  // FIXME: advance asycronously to allow handling other tasks
   buzzer.playFromProgramSpace(Q1);
 
   delay(5000);
