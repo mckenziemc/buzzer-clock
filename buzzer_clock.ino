@@ -2,7 +2,7 @@ unsigned long seconds_into_day = 0;
 
 unsigned long current_second = 0;
 
-const char play_config[] PROGMEM = "!v10";
+const char play_config[] PROGMEM = "!v8";
 const char Q1[] PROGMEM = "g#f#e<b.R8";
 const char Q2[] PROGMEM = "eg#f#<b.R8 ef#g#e.R8";
 const char Q3[] PROGMEM = "g#ef#<b.R8 <bf#g#e.R8 g#f#e<b.R8";
