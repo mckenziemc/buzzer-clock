@@ -16,7 +16,7 @@ AStar32U4LCD lcd;
 
 const unsigned SERIAL_BUFFER_LENGTH = 32;
 char serial_buffer[SERIAL_BUFFER_LENGTH];
-unsigned serial_buffer_index;
+unsigned serial_buffer_index = 0;
 boolean bad_serial_buffer = false; // used if input exceeds buffer length
 
 // variables for the play-all-sequences feature
@@ -61,6 +61,36 @@ void loop() {
       playNext();
     }
   }
+
+  while (Serial.available()) {
+    Serial.println(Serial.available());
+    
+    int next_char = Serial.read();
+
+    Serial.println((byte) next_char);
+    Serial.println();
+
+    if (next_char == 13) {
+      // consume the line-feed character if present
+      if (Serial.available() && Serial.peek() == 10) {
+        Serial.read();
+        Serial.println("found CR+LF");
+      }
+
+      process_serial_line();
+    } else if (next_char == 10) {
+      process_serial_line();
+    } else {
+      // some character other than a new-line
+ 
+      if (serial_buffer_index >= SERIAL_BUFFER_LENGTH - 1) {
+        bad_serial_buffer = true;
+      } else {
+        Serial.println("placing in serial buffer");
+        serial_buffer[serial_buffer_index++] = next_char;
+      }
+    }
+  }
 }
 
 
@@ -90,5 +120,27 @@ void playNext() {
     default:
     playing_all = false;
   }
+}
+
+
+void process_serial_line() {
+  Serial.println("processing serial buffer");
+  
+  if (bad_serial_buffer) {
+    // ignore buffer contents
+    Serial.println("Buffer overflow; ignoring line.");
+    bad_serial_buffer = false;
+  } else {
+  }
+
+  Serial.print("Buffer contents: ");
+  Serial.println(serial_buffer);
+
+  // clear the buffer
+  for (unsigned i = 0; i < serial_buffer_index; i++) {
+    serial_buffer[i] = 0;
+  }
+
+  serial_buffer_index = 0;
 }
 
