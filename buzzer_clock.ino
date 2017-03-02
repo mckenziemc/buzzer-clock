@@ -1,6 +1,14 @@
-byte time_hour = 0;
-byte time_minute = 0;
-byte time_second = 1; // to prevent playing long sequence on startup
+#include <AStar32U4.h>
+
+AStar32U4Buzzer buzzer;
+AStar32U4ButtonA buttonA;
+AStar32U4ButtonB buttonB;
+AStar32U4ButtonC buttonC;
+AStar32U4LCD lcd;
+
+byte clock_hour = 0;
+byte clock_minute = 0;
+byte clock_second = 1; // to prevent playing long sequence on startup
 
 // millis value for the start of the next second
 unsigned long next_second = 1000;
@@ -17,14 +25,6 @@ const char Q3[] PROGMEM = "g#ef#<b.R8 <bf#g#e.R8 g#f#e<b.R8";
 const char Q4[] PROGMEM = "eg#f#<b.R8 ef#g#e.R8 g#ef#<b.R8 <bf#g#e.R8";
 
 unsigned play_strikes = 0;
-
-#include <AStar32U4.h>
-
-AStar32U4Buzzer buzzer;
-AStar32U4ButtonA buttonA;
-AStar32U4ButtonB buttonB;
-AStar32U4ButtonC buttonC;
-AStar32U4LCD lcd;
 
 const unsigned SERIAL_BUFFER_LENGTH = 32;
 char serial_buffer[SERIAL_BUFFER_LENGTH];
@@ -54,7 +54,7 @@ void loop() {
     next_second += 1000;
 
     // update the time variables
-    time_second++;
+    clock_second++;
 
     display_time();
   }
@@ -119,18 +119,18 @@ void loop() {
       }
 
       // check if it's time to play a sequence
-      if (!buzzer.isPlaying() && time_second == 0) {
-        switch (time_minute) {
+      if (!buzzer.isPlaying() && clock_second == 0) {
+        switch (clock_minute) {
           case 0:
           // hour
           buzzer.playFromProgramSpace(Q4);
 
-          if (time_hour == 0) {
+          if (clock_hour == 0) {
             play_strikes = 12;
-          } else if (time_hour > 12) {
-            play_strikes = time_hour - 12;
+          } else if (clock_hour > 12) {
+            play_strikes = clock_hour - 12;
           } else {
-            play_strikes = time_hour;
+            play_strikes = clock_hour;
           }
  
           break;
@@ -154,10 +154,10 @@ void loop() {
     case SET_TIME_MODE_HOUR:
     {
       if (buttonB.getSingleDebouncedPress()) {
-        time_hour++;
+        clock_hour++;
         display_time();
       } else if (buttonC.getSingleDebouncedPress()) {
-        time_hour--;
+        clock_hour--;
         display_time();
       } else if (buttonA.getSingleDebouncedPress()) {
         set_time_mode++;
@@ -168,10 +168,10 @@ void loop() {
     case SET_TIME_MODE_MINUTE:
     {
       if (buttonB.getSingleDebouncedPress()) {
-        time_minute++;
+        clock_minute++;
         display_time();
       } else if (buttonC.getSingleDebouncedPress()) {
-        time_minute--;
+        clock_minute--;
         display_time();
       } else if (buttonA.getSingleDebouncedPress()) {
         set_time_mode++;
@@ -183,11 +183,11 @@ void loop() {
     {
       // if the second is changed, consider the button press as marking the start of the second
       if (buttonB.getSingleDebouncedPress()) {
-        time_second++;
+        clock_second++;
         next_second = millis() + 1000;
         display_time();
       } else if (buttonC.getSingleDebouncedPress()) {
-        time_second--;
+        clock_second--;
         next_second = millis() + 1000;
         display_time();
       } else if (buttonA.getSingleDebouncedPress()) {
@@ -252,26 +252,26 @@ void process_serial_line() {
 
 void fix_time() {
   // assume that if a value is outside its bound, only one correction is necessary
-  if (time_second >= (256 - 60)) {
-    time_second += 60;
-    time_minute--;
-  } else if (time_second >= 60) {
-    time_second -= 60;
-    time_minute++;
+  if (clock_second >= (256 - 60)) {
+    clock_second += 60;
+    clock_minute--;
+  } else if (clock_second >= 60) {
+    clock_second -= 60;
+    clock_minute++;
   }
 
-  if (time_minute >= (256 - 60)) {
-    time_minute += 60;
-    time_hour--;
-  } else if (time_minute >= 60) {
-    time_minute -= 60;
-    time_hour++;
+  if (clock_minute >= (256 - 60)) {
+    clock_minute += 60;
+    clock_hour--;
+  } else if (clock_minute >= 60) {
+    clock_minute -= 60;
+    clock_hour++;
   }
 
-  if (time_hour >= (256 - 24)) {
-    time_hour += 24;
-  } else if (time_hour >= 24) {
-    time_hour -= 24;
+  if (clock_hour >= (256 - 24)) {
+    clock_hour += 24;
+  } else if (clock_hour >= 24) {
+    clock_hour -= 24;
   }
 }
 
@@ -281,30 +281,30 @@ void display_time() {
   String hour_string;
   String minute_string;
   String second_string;
-  
-  if (time_hour < 10) {
+
+  if (clock_hour < 10) {
     hour_string = "0";
   } else {
     hour_string = "";
   }
   
-  hour_string += time_hour;
+  hour_string += clock_hour;
 
-  if (time_minute < 10) {
+  if (clock_minute < 10) {
     minute_string = "0";
   } else {
     minute_string = "";
   }
   
-  minute_string += time_minute;
+  minute_string += clock_minute;
   
-  if (time_second < 10) {
+  if (clock_second < 10) {
     second_string = "0";
   } else {
     second_string = "";
   }
 
-  second_string += time_second;
+  second_string += clock_second;
 
   String time_string = hour_string + ":" + minute_string + ":" + second_string;
 
