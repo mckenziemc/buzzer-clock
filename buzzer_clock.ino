@@ -1,6 +1,6 @@
 byte time_hour = 0;
 byte time_minute = 0;
-byte time_second = 0;
+byte time_second = 1; // to prevent playing long sequence on startup
 
 // millis value for the start of the next second
 unsigned long next_second = 1000;
@@ -15,6 +15,8 @@ const char Q1[] PROGMEM = "g#f#e<b.R8";
 const char Q2[] PROGMEM = "eg#f#<b.R8 ef#g#e.R8";
 const char Q3[] PROGMEM = "g#ef#<b.R8 <bf#g#e.R8 g#f#e<b.R8";
 const char Q4[] PROGMEM = "eg#f#<b.R8 ef#g#e.R8 g#ef#<b.R8 <bf#g#e.R8";
+
+unsigned play_strikes = 0;
 
 #include <AStar32U4.h>
 
@@ -99,16 +101,52 @@ void loop() {
     }
   }
 
+  if (play_strikes > 0 && !buzzer.isPlaying()) {
+    play_strikes--;
+    buzzer.play("<E1R");
+  }
+
   switch (set_time_mode) {
     case 0:
     {
       if (buttonA.getSingleDebouncedRelease()) {
-        playAll();
+        //playAll();
       }
   
       if (buttonB.getSingleDebouncedPress() or buttonC.getSingleDebouncedPress()) {
         set_time_mode = SET_TIME_MODE_HOUR;
         // TODO: start blinking hour indicator
+      }
+
+      // check if it's time to play a sequence
+      if (!buzzer.isPlaying() && time_second == 0) {
+        switch (time_minute) {
+          case 0:
+          // hour
+          buzzer.playFromProgramSpace(Q4);
+
+          if (time_hour == 0) {
+            play_strikes = 12;
+          } else if (time_hour > 12) {
+            play_strikes = time_hour - 12;
+          } else {
+            play_strikes = time_hour;
+          }
+ 
+          break;
+
+          case 15:
+          buzzer.playFromProgramSpace(Q1);
+          break;
+
+          case 30:
+          buzzer.playFromProgramSpace(Q2);
+          break;
+
+          case 45:
+          buzzer.playFromProgramSpace(Q3);
+          break;
+        }
       }
     }
     break;
