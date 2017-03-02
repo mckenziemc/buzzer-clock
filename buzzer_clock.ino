@@ -10,6 +10,8 @@ byte clock_hour = 0;
 byte clock_minute = 0;
 byte clock_second = 1; // to prevent playing long sequence on startup
 
+char time_string[] = "00:00:00";
+
 // millis value for the start of the next second
 unsigned long next_second = 1000;
 
@@ -278,35 +280,14 @@ void fix_time() {
 void display_time() {
   fix_time();
 
-  String hour_string;
-  String minute_string;
-  String second_string;
+  time_string[0] = '0' + clock_hour / 10;
+  time_string[1] = '0' + clock_hour % 10;
 
-  if (clock_hour < 10) {
-    hour_string = "0";
-  } else {
-    hour_string = "";
-  }
-  
-  hour_string += clock_hour;
+  time_string[3] = '0' + clock_minute / 10;
+  time_string[4] = '0' + clock_minute % 10;
 
-  if (clock_minute < 10) {
-    minute_string = "0";
-  } else {
-    minute_string = "";
-  }
-  
-  minute_string += clock_minute;
-  
-  if (clock_second < 10) {
-    second_string = "0";
-  } else {
-    second_string = "";
-  }
-
-  second_string += clock_second;
-
-  String time_string = hour_string + ":" + minute_string + ":" + second_string;
+  time_string[6] = '0' + clock_second / 10;
+  time_string[7] = '0' + clock_second % 10;
 
   lcd.clear();
   lcd.print(time_string);
