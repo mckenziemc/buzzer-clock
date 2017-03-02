@@ -10,6 +10,7 @@ byte clock_hour = 0;
 byte clock_minute = 0;
 byte clock_second = 1; // to prevent playing long sequence on startup
 
+// dedicated C string for display formatting
 char time_string[] = "00:00:00";
 
 // millis value for the start of the next second
