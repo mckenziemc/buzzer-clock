@@ -292,6 +292,25 @@ void display_time() {
 
   lcd.clear();
   lcd.print(time_string);
+
+  // handle cursor blinking if currently in a set-time mode
+  if (set_time_mode && millis() % 2000 < 1000) {
+    switch (set_time_mode) {
+      case SET_TIME_MODE_HOUR:
+      lcd.setCursor(1,0);
+      break;
+
+      case SET_TIME_MODE_MINUTE:
+      lcd.setCursor(4,0);
+      break;
+
+      case SET_TIME_MODE_SECOND:
+      lcd.setCursor(7,0);
+      break;
+    }
+    
+    lcd.cursorSolid();
+  }
 }
 
 
